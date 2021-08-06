@@ -17,7 +17,7 @@ while curTrials <= maxTrials
     if numBestInliers < numCurInliers
         bestInliers = curInliers;
         numBestInliers = numCurInliers;
-        if option == 2 || option == 3
+        if strcmp(option,'DEGEN') || strcmp(option,'BOTH')
         % degenaracy check
             [H, degeneracy] = DegeneracyCheck(X, Y, indices, threshold);
             if degeneracy
@@ -29,7 +29,7 @@ while curTrials <= maxTrials
                 end
             end
         end
-        if option == 1 || option == 3
+        if strcmp(option,'LO') || strcmp(option,'BOTH')
         % local optimization
             if numBestInliers >= 8
                 [curInliers, F] = LocalOptimizationF(bestInliers, X, Y, threshold);

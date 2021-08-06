@@ -13,8 +13,8 @@ maxTrials = 1000;
 threshold = 1;
 confidence = 0.99;
 
-% option 0:None, 1:LO, 2:DEGEN, 3:Both
-option = 0;
+% option: None, LO, DEGEN, BOTH
+option = 'None';
 [F, inliers] = RANSAC_FundamentalMatrix(X0, Y0, maxTrials, threshold, confidence, option);
 e = mean(SampsonDistanceF(vpts(1:3,:),vpts(4:6,:),F))
 figure
@@ -30,8 +30,8 @@ maxTrials = 1000;
 threshold = 1;
 confidence = 0.99;
 
-% option 0:None, 1:LO
-option = 0;
+% option: None, LO
+option = 'None';
 [H, inliers] = RANSAC_Homography(X0, Y0, maxTrials, threshold, confidence, option);
 e = mean(SampsonDistanceH(vpts(1:3,:),vpts(4:6,:),H))
 figure
