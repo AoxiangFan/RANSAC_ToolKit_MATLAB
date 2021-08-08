@@ -17,7 +17,7 @@ while curTrials <= maxTrials
     if numBestInliers < numCurInliers
         bestInliers = curInliers;
         numBestInliers = numCurInliers;
-        if strcmp(option,'LO') || strcmp(option,'BOTH')
+        if strcmp(option,'LO')
         % local optimization
             if numBestInliers >= 8
                 [curInliers, F] = LocalOptimizationF(bestInliers, X, Y, threshold);
