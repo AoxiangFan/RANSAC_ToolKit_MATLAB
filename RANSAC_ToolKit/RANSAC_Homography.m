@@ -1,4 +1,4 @@
-function [H, bestInliers] = RANSAC_Homography(X, Y, maxTrials, threshold, confidence, option)
+function [H, bestInliers] = RANSAC_Homography(X, Y, maxTrials, threshold, confidence, LO)
 
 N = size(X,1);
 X = [X, ones(N,1)]';
@@ -7,20 +7,28 @@ Y = [Y, ones(N,1)]';
 curTrials = 0;
 bestInliers = [];
 numBestInliers = 0;
-logOneMinusConf = log(1 - confidence);
-oneOverNPts = 1/N;
+
+numGoodInliers = 0;
+
+global Dx;
+global Dy;
+[Dx, Dy] = preSampsonDistanceH_all(X, Y);
 
 while curTrials <= maxTrials
-    [H, curInliers, ~] = MinimalSample_H(X, Y, N, threshold);
+    [H, ~] = MinimalSample_H(X, Y, N);
+    d = SampsonDistanceH_all(X, Y, H);
+    curInliers = find(d<=threshold);
     numCurInliers = length(curInliers);
-        
-    if numBestInliers < numCurInliers
-        bestInliers = curInliers;
-        numBestInliers = numCurInliers;
-        if strcmp(option, 'LO')
-        % local optimization
-            if numBestInliers >= 4
-                [curInliers, H] = LocalOptimizationH(bestInliers, X, Y, threshold);
+    if numGoodInliers < numCurInliers
+        numGoodInliers = numCurInliers;
+        maxTrials = updateMaxTrials(numGoodInliers, maxTrials, N, confidence, 4);
+        if numBestInliers < numCurInliers
+            bestInliers = curInliers;
+            numBestInliers = numCurInliers;
+        end
+        if LO
+            if numCurInliers >= 8
+                [H, curInliers] = LO_H(X, Y, H, threshold, 3, 50);
                 numCurInliers = length(curInliers);
                 if numBestInliers < numCurInliers
                     bestInliers = curInliers;
@@ -28,12 +36,14 @@ while curTrials <= maxTrials
                 end
             end
         end
-        % Update the number of trials
-        maxTrials = updateNumTrials(oneOverNPts, logOneMinusConf, numCurInliers, maxTrials, 4);
     end
     curTrials = curTrials + 1;
 end
-H = norm4Point(X(:, bestInliers), Y(:, bestInliers));
-d = SampsonDistanceH(X, Y, H);
-bestInliers = find(d<=threshold);
+if length(bestInliers) >= 4    
+    H = norm4Point(X(:, bestInliers), Y(:, bestInliers));
+    d = SampsonDistanceH_all(X, Y, H);
+    bestInliers = find(d<=threshold);
+else
+    H = ones(3,3);
+end
 end
